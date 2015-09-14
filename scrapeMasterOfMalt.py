@@ -1,9 +1,9 @@
+
+# coding: utf-8
+
 from bs4 import BeautifulSoup
 import urllib2
 import json
-
-
-
 
 urlM = 'https://www.masterofmalt.com'
 page = urllib2.urlopen(urlM+'/whisky')
@@ -17,8 +17,7 @@ for countries in soup.findAll("div", {"class" : "promotions_linkList"}):
         if cnt.get('href') not in emptyurls:
             url_country.append(urlM + str(cnt.get('href')))
 
-url_country.pop(-1) 
-
+url_country.pop(-1)
 
 
 
@@ -34,7 +33,7 @@ for urlC in url_coun:
     while 1<2:
         if len(soup.findAll("span", {"id":"ContentPlaceHolder1_ctl05_pageNext"}))!=0:
             next_url = soup.findAll("span", {"id":"ContentPlaceHolder1_ctl05_pageNext"})[0].find('a')
-            if next_url != None: 
+            if next_url != None:
                 url = next_url.get('href')
             else:
                 break
@@ -46,18 +45,17 @@ for urlC in url_coun:
             linkWhiskey.append(link.find('a').get('href'))
             print link.find('a').get('href')
 
+
+
 links = {}
 for i in range(2345):
     links[str(i)] = linkWhiskey[i]
 
 with open('MoM_Links.json', 'w') as ff:
-     json.dump(links, ff)
+    json.dump(links, ff)
+
 ff.close()
 
-
-
-
-################## going through all the whiskeys
 data = {}
 inc = 0
 weirdItemScope = []
@@ -87,16 +85,15 @@ for urlW in linkWhiskey:
         try:
             data[wName]['distillery'] = str(itemScope[2].get_text())
         except:
-            data[wName]['distillery'] = str(itemScope[2].find('a').get('href').split('/')[-2].replace('-',' '))
-
+            data[wName]['distillery'] = itemScope[2].get_text()
+            
     if len(itemScope) == 3:
         data[wName]['region'] = 'N/A'
         data[wName]['country']=str(itemScope[0].get_text())#str                                                                                  
         try:
             data[wName]['distillery']=str(itemScope[1].get_text())
         except:
-            data[wName]['distillery'] = str(itemScope[1].find('a').get('href').split('/')[-2].replace('-',' '))                                 \
-
+            data[wName]['distillery'] = itemScope[1].find('a').get('href').split('/')[-2].replace('-',' ')                              
     if len(itemScope) != 3 and len(itemScope) != 4:
         data[wName]['itemscope'] = itemScope
         weirdItemScope.append(wName)
@@ -175,6 +172,4 @@ with open('MoM_whiskeys.json', 'w') as ff:
 ff.close() 
 
 
-#for cigar in jrcigars
-#https://www.jrcigars.com/brands/cigars
-#find image from class="img-large"
+
