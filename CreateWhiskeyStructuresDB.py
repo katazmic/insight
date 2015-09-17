@@ -121,13 +121,20 @@ for i in data:
     dataStr[i]['name'] = str(i)
     notes = ''
     for nts in notes_list[k]:
-        notes = notes + nts + ' '
+        notes = notes + nts
+        if nts != notes_list[k][-1]:
+            notes = notes + ', '
     dataStr[i]['notes'] = notes
     dataStr[i]['Palate'] = data[i]['Palate']
     dataStr[i]['Nose'] = data[i]['Nose']
     dataStr[i]['link'] = str(data[i]['link']) 
     dataStr[i]['image'] = str(data[i]['image'])
-    dataStr[i]['categories'] = cat_list[k]
+    categories = ''
+    for nts in cat_list[k]:
+        categories = categories + nts 
+        if nts != cat_list[k][-1]:
+            categories = categories + ', '
+    dataStr[i]['categories'] = categories
     dataStr[i]['binaryNotes'] = notesBinary_list[k]
     dataStr[i]['binaryCategories'] = catB_list[k]
     k=k+1
