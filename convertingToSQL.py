@@ -5,45 +5,37 @@ import json
 
 import pymysql as mdb
 
-with open('CubanCigar.json') as data_file:
+with open('WhiskeyStructured.json') as data_file:
     data = json.load(data_file)
 
-NumCigars = len(data.keys())
-
-NumFeatures = len(data[data.keys()[0]].keys())
-
+data_file.close()
 
 
 HOST = 'localhost'
 USER = 'root'
 PASSWD = ''
-DATABASE = 'cubanCigars'
+DATABASE = 'WhiskeyAndCigars'
 
 
 
 db_connect = mdb.connect(
-    host = HOST,
-    user = USER,
-    passwd = PASSWD)
+                         host = HOST,
+                         user = USER,
+                         passwd = PASSWD)
 
 
 cursor = db_connect.cursor()
 
-cursor.execute('CREATE DATABASE cigar')
-cursor.execute('USE cigar')
+cursor.execute('CREATE DATABASE WhiskeyAndCigars')
+cursor.execute('USE WhiskeyAndCigars')
+
 cursor.execute("""
-CREATE TABLE cigar_info(
+    CREATE TABLE whiskey_info(
     id INTEGER NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
-    brand TEXT,
-    overall_rating TEXT,
-    origin TEXT,
     link TEXT,
-    appearance TEXT,
-    value TEXT,
-    construction TEXT,
     full_review TEXT,
-    flavor TEXT,
+    notes TEXT,
     image TEXT,
     PRIMARY KEY (id)
     )
@@ -51,28 +43,63 @@ CREATE TABLE cigar_info(
 
 
 
-add_cigar = ("INSERT INTO cigar_info "
-           " (name,brand,overall_rating,origin,link,appearance,value,construction,full_review,flavor,image)"
-           " VALUES (%s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s)")
+add_whiskey = ("INSERT INTO whiskey_info "
+               " (name,link,full_review,notes,image)"
+               " VALUES (%s, %s, %s, %s, %s)")
 
-
-cigar_info_list = ['brand','overall rating','origin','link','appearance','value','construction','full review','flavor','image']
 
 for i in range(len(data.keys())):
     name = data.keys()[i]
-    brand = str(data[name]['brand'].replace(u'\u20ac',''))
-    overall_rating = str(data[name]['overall rating'].replace(u'\u20ac',''))
-    origin = str(data[name]['origin'].replace(u'\u20ac',''))
     link = str(data[name]['link'].replace(u'\u20ac',''))
-    appearance = str(data[name]['appearance'].replace(u'\u20ac','').replace(u'\xa0',''))
-    value = str(data[name]['value'].replace(u'\u20ac',''))
-    construction = str(data[name]['construction'].replace(u'\u20ac',''))
     full_review =  str(data[name]['full review'].replace(u'\xa0','').replace(u'\u20ac','').replace(u'\xe9',''))
-    flavor = str(data[name]['flavor'].replace(u'\u20ac',''))
-    image = str(data[name]['image'].replace(u'\u20ac',''))
-    cigar_data = (name,brand,overall_rating,origin,link,appearance,value,construction,full_review,flavor,image)
+    notes = data[name]['notes']
+    image = data[name]['image']
+    whiskey_data = (name,link,full_review,notes,image)
 
+    cursor.execute(add_whiskey, whiskey_data)
+
+
+
+
+
+###   cigars
+
+with open('CigarsStructured.json') as data_file:
+    data = json.load(data_file)
+
+data_file.close()
+
+cursor.execute("""
+    CREATE TABLE cigar_info(
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    name TEXT NOT NULL,
+    link TEXT,
+    full_review TEXT,
+    notes TEXT,
+    image TEXT,
+    PRIMARY KEY (id)
+    )
+    """)
+
+
+
+add_whiskey = ("INSERT INTO cigar_info "
+               " (name,link,full_review,notes,image)"
+               " VALUES (%s, %s, %s, %s, %s)")
+
+
+for i in range(len(data.keys())):
+    name = data.keys()[i]
+    link = str(data[name]['link'].replace(u'\u20ac',''))
+    full_review =  str(data[name]['full review'].replace(u'\xa0','').replace(u'\u20ac','').replace(u'\xe9',''))
+    notes = data[name]['notes']
+    image = data[name]['image']
+    cigar_data = (name,link,full_review,notes,image)
+    
     cursor.execute(add_cigar, cigar_data)
+    
+
+    
     db_connect.commit()
 
 
