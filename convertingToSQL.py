@@ -30,77 +30,88 @@ cursor.execute('CREATE DATABASE WhiskeyAndCigars')
 cursor.execute('USE WhiskeyAndCigars')
 
 cursor.execute("""
+    DROP TABLE whiskey_info
+    """)
+
+cursor.execute("""
     CREATE TABLE whiskey_info(
     id INTEGER NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     link TEXT,
-    full_review TEXT,
+    palate TEXT,
+    nose TEXT,
     notes TEXT,
+    categories TEXT,
     image TEXT,
     PRIMARY KEY (id)
     )
     """)
 
 
-
 add_whiskey = ("INSERT INTO whiskey_info "
-               " (name,link,full_review,notes,image)"
-               " VALUES (%s, %s, %s, %s, %s)")
+               " (name,link,palate,nose,notes,categories,image)"
+               " VALUES (%s, %s, %s, %s, %s, %s,%s)")
 
 
 for i in range(len(data.keys())):
-    name = data.keys()[i]
-    link = str(data[name]['link'].replace(u'\u20ac',''))
-    full_review =  str(data[name]['full review'].replace(u'\xa0','').replace(u'\u20ac','').replace(u'\xe9',''))
-    notes = data[name]['notes']
-    image = data[name]['image']
-    whiskey_data = (name,link,full_review,notes,image)
-
-    cursor.execute(add_whiskey, whiskey_data)
-
-
-
+    try:
+        name = str(data.keys()[i])
+        link = str(data[name]['link'])
+        notes = str(data[name]['notes'])
+        palate = str(data[name]['Palate'])
+        nose = str(data[name]['Nose'])
+        categories = str(data[name]['categories'])
+        image = str(data[name]['image'])
+        whiskey_data = (name,link,palate,nose,notes,categories,image)
+        cursor.execute(add_whiskey, whiskey_data)
+        db_connect.commit()
+    except:
+        print name
 
 
 ###   cigars
 
-with open('CigarsStructured.json') as data_file:
+with open('CigarStructured.json') as data_file:
     data = json.load(data_file)
 
 data_file.close()
+
+
+cursor.execute("""
+    DROP TABLE cigar_info
+    """)
 
 cursor.execute("""
     CREATE TABLE cigar_info(
     id INTEGER NOT NULL AUTO_INCREMENT,
     name TEXT NOT NULL,
     link TEXT,
-    full_review TEXT,
+    flavor TEXT,
     notes TEXT,
+    categories TEXT,
     image TEXT,
     PRIMARY KEY (id)
     )
     """)
 
-
-
-add_whiskey = ("INSERT INTO cigar_info "
-               " (name,link,full_review,notes,image)"
-               " VALUES (%s, %s, %s, %s, %s)")
+add_cigar = ("INSERT INTO cigar_info "
+               " (name,link,flavor,notes,categories,image)"
+               " VALUES (%s, %s, %s, %s, %s,%s)")
 
 
 for i in range(len(data.keys())):
-    name = data.keys()[i]
-    link = str(data[name]['link'].replace(u'\u20ac',''))
-    full_review =  str(data[name]['full review'].replace(u'\xa0','').replace(u'\u20ac','').replace(u'\xe9',''))
-    notes = data[name]['notes']
-    image = data[name]['image']
-    cigar_data = (name,link,full_review,notes,image)
-    
-    cursor.execute(add_cigar, cigar_data)
-    
-
-    
-    db_connect.commit()
+    try:
+        name = str(data.keys()[i])
+        link = str(data[name]['link'])
+        notes = str(data[name]['notes'])
+        flavor = str(data[name]['flavor'])
+        categories = str(data[name]['categories'])
+        image = str(data[name]['image'])
+        cigar_data = (name,link,flavor,notes,categories,image)
+        cursor.execute(add_cigar, cigar_data)
+        db_connect.commit()
+    except:
+        print name
 
 
 
