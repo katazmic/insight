@@ -2,8 +2,9 @@
 # coding: utf-8
 
 import json 
-
+import numpy as np
 import pymysql as mdb
+
 
 with open('WhiskeyStructured.json') as data_file:
     data = json.load(data_file)
@@ -112,6 +113,56 @@ for i in range(len(data.keys())):
         db_connect.commit()
     except:
         print name
+
+
+with open('CigarStructured.json') as data_file:
+    dataC = json.load(data_file)
+
+data_file.close()
+
+with open('WhiskeyStructured.json') as data_file:
+    dataW = json.load(data_file)
+
+data_file.close()
+
+data_matched = []
+
+for w in dataW.keys():
+    whName = str(w)
+    wL = np.dot(dataW[w]['binaryCategories'],dataW[w]['binaryCategories'])
+    for c in dataC.keys():
+        cL = np.dot(dataC[c]['binaryCategories'],dataC[c]['binaryCategories'])
+        crName = str(c)
+        scr = float(np.dot(dataW[w]['binaryCategories'],dataC[c]['binaryCategories']))/(float(wL)*float(cL))
+        data_matched.append(dict(whiskeyName = whName, cigarName = crName, matchScore = scr))
+    
+
+
+cursor.execute("""
+    DROP TABLE cigar_whiskey_match
+    """)
+
+cursor.execute("""
+    CREATE TABLE cigar_whiskey_match(
+    id INTEGER NOT NULL AUTO_INCREMENT,
+    whiskeyName TEXT NOT NULL,
+    cigarName TEXT NOT NULL,
+    matchScore FLOAT,
+    PRIMARY KEY (id)
+    )
+    """)
+
+add_match = ("INSERT INTO cigar_whiskey_match "
+             " (whiskeyName,cigarName,matchScore)"
+             " VALUES (%s, %s, %f)")
+
+
+for matched in data_matched:
+    match_data = (matched['whiskeyName'],matched['cigarName'], matched['matchScore'])
+    print type(match_data['matxhScore'])
+    cursor.execute(add_match, match_data)
+    db_connect.commit()
+    
 
 
 
