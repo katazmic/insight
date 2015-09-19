@@ -7,7 +7,7 @@ import pymysql as mdb
 
 
 with open('WhiskeyStructured.json') as data_file:
-    data = json.load(data_file)
+    dataW = json.load(data_file)
 
 data_file.close()
 
@@ -54,15 +54,15 @@ add_whiskey = ("INSERT INTO whiskey_info "
                " VALUES (%s, %s, %s, %s, %s, %s,%s)")
 
 
-for i in range(len(data.keys())):
+for i in range(len(dataW.keys())):
     try:
-        name = str(data.keys()[i])
-        link = str(data[name]['link'])
-        notes = str(data[name]['notes'])
-        palate = str(data[name]['Palate'])
-        nose = str(data[name]['Nose'])
-        categories = str(data[name]['categories'])
-        image = str(data[name]['image'])
+        name = str(dataW.keys()[i])
+        link = str(dataW[name]['link'])
+        notes = str(dataW[name]['notes'])
+        palate = str(dataW[name]['Palate'])
+        nose = str(dataW[name]['Nose'])
+        categories = str(dataW[name]['categories'])
+        image = str(dataW[name]['image'])
         whiskey_data = (name,link,palate,nose,notes,categories,image)
         cursor.execute(add_whiskey, whiskey_data)
         db_connect.commit()
@@ -73,7 +73,7 @@ for i in range(len(data.keys())):
 ###   cigars
 
 with open('CigarStructured.json') as data_file:
-    data = json.load(data_file)
+    dataC = json.load(data_file)
 
 data_file.close()
 
@@ -100,14 +100,14 @@ add_cigar = ("INSERT INTO cigar_info "
                " VALUES (%s, %s, %s, %s, %s,%s)")
 
 
-for i in range(len(data.keys())):
+for i in range(len(dataC.keys())):
     try:
-        name = str(data.keys()[i])
-        link = str(data[name]['link'])
-        notes = str(data[name]['notes'])
-        flavor = str(data[name]['flavor'])
-        categories = str(data[name]['categories'])
-        image = str(data[name]['image'])
+        name = str(dataC.keys()[i])
+        link = str(dataC[name]['link'])
+        notes = str(dataC[name]['notes'])
+        flavor = str(dataC[name]['flavor'])
+        categories = str(dataC[name]['categories'])
+        image = str(dataC[name]['image'])
         cigar_data = (name,link,flavor,notes,categories,image)
         cursor.execute(add_cigar, cigar_data)
         db_connect.commit()
@@ -115,27 +115,8 @@ for i in range(len(data.keys())):
         print name
 
 
-with open('CigarStructured.json') as data_file:
-    dataC = json.load(data_file)
 
-data_file.close()
-
-with open('WhiskeyStructured.json') as data_file:
-    dataW = json.load(data_file)
-
-data_file.close()
-
-data_matched = []
-
-for w in dataW.keys():
-    whName = str(w)
-    wL = np.dot(dataW[w]['binaryCategories'],dataW[w]['binaryCategories'])
-    for c in dataC.keys():
-        cL = np.dot(dataC[c]['binaryCategories'],dataC[c]['binaryCategories'])
-        crName = str(c)
-        scr = float(np.dot(dataW[w]['binaryCategories'],dataC[c]['binaryCategories']))/(float(wL)*float(cL))
-        data_matched.append(dict(whiskeyName = whName, cigarName = crName, matchScore = scr))
-    
+################# MATCHING TABLE
 
 
 cursor.execute("""
@@ -147,22 +128,37 @@ cursor.execute("""
     id INTEGER NOT NULL AUTO_INCREMENT,
     whiskeyName TEXT NOT NULL,
     cigarName TEXT NOT NULL,
-    matchScore FLOAT,
+    matchScore TEXT,
     PRIMARY KEY (id)
     )
     """)
 
 add_match = ("INSERT INTO cigar_whiskey_match "
              " (whiskeyName,cigarName,matchScore)"
-             " VALUES (%s, %s, %f)")
+             " VALUES (%s, %s, %s)")
+
+data_matched = []
+
+for w in dataW:
+    whiskey = dataW[w]
+    wL = np.sqrt(float(np.dot(whiskey['binaryNotes'],whiskey['binaryNotes'])))
+    for c in dataC:
+        cigar = dataC[c]
+        cL = np.sqrt(float(np.dot(cigar['binaryNotes'],cigar['binaryNotes'])))
+        scr = float(np.dot(dataW[w]['binaryNotes'],dataC[c]['binaryNotes']))/(float(wL)*float(cL))
+        data_matched.append(dict(whiskeyName = whiskey['name'], cigarName = cigar['name'], matchScore = scr))    
 
 
+
+k=0
 for matched in data_matched:
     match_data = (matched['whiskeyName'],matched['cigarName'], matched['matchScore'])
-    print type(match_data['matxhScore'])
-    cursor.execute(add_match, match_data)
+    bla = cursor.execute(add_match, match_data)
+    print k 
     db_connect.commit()
-    
+    k=k+1
 
 
+
+###################################
 
